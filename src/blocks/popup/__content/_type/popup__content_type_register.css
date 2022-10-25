@@ -1,0 +1,6 @@
+.popup__content_type_register {
+    min-width: 358px;
+    background-color: black;
+    border: 1px solid green;
+    align-items: center;
+}

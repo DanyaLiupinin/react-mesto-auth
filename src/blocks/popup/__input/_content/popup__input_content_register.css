@@ -1,0 +1,6 @@
+.popup__input_content_register {
+    background-color: unset;
+    color: #ccc;
+    border-bottom: 2px solid #ccc;
+    width: 100%;
+}
