@@ -2,8 +2,10 @@
     margin-top: 38px;
 }
 
+/*
 @media (max-width: 620px) {
-    .popup__submit-button {
+    .popup__submit-button_type_delete {
        width: 210px;
     }
  }
+ */
