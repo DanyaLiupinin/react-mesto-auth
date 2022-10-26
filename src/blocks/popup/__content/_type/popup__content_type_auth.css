@@ -1,6 +1,5 @@
-.popup__content_type_register {
+.popup__content_type_auth {
     min-width: 358px;
     background-color: black;
-    border: 1px solid green;
     align-items: center;
 }
