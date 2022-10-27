@@ -13,9 +13,9 @@ import { Route, Switch } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register'
 import ProtectedRoute from './ProtectedRoute';
+import * as mestoAuth from '../utils/mestoAuth';
 
 function App() {
-
 
    // попапы
 
@@ -26,6 +26,18 @@ function App() {
    const [currentUser, setCurrentUser] = React.useState({})
    const [loggedIn, setLoggedIn] = React.useState(false) 
    
+
+   function checkToken() {
+      const token = localStorage.getItem('token')
+      console.log(token)
+   }
+
+   // проверить написание jst
+   // в mestoAuth сохраняю в локальное хранилище как jwt, дальше пишу как токен
+   // проверка и сохранение токена при входе на сайт
+
+   checkToken()
+
 
    React.useEffect(() => {
       api.getUserInfo()
@@ -152,6 +164,17 @@ function App() {
       alert (`Ошибка. ${err}`)
    }
 
+   function handleRegistration (password, email) {
+      mestoAuth.register(password, email)
+   }
+
+   function handleAuthorization (password, email) {
+      mestoAuth.authorization(password, email)
+      setLoggedIn(true)
+   }
+
+   
+
    return (
       <>
       
@@ -159,28 +182,32 @@ function App() {
             <CurrentUserContext.Provider value={currentUser}>
                <Header />
                <Switch>
-               <ProtectedRoute
-                  exact path="/"
-                  loggedIn={loggedIn}
-                  component={Main}
-                  onEditProfile={handleEditProfileClick}
-                  onAddPlace={handleAddPlaceClick}
-                  onEditAvatar={handleEditAvatarClick}
-                  onCardClick={handleCardClick}
-                  cards={cards}
-                  onCardLike={handleCardLike}
-                  onCardDelete={handleCardDelete}
-               />
+                  <ProtectedRoute
+                     exact path="/"
+                     loggedIn={loggedIn}
+                     component={Main}
+                     onEditProfile={handleEditProfileClick}
+                     onAddPlace={handleAddPlaceClick}
+                     onEditAvatar={handleEditAvatarClick}
+                     onCardClick={handleCardClick}
+                     cards={cards}
+                     onCardLike={handleCardLike}
+                     onCardDelete={handleCardDelete}
+                  />
 
                   
 
 
                   
                   <Route path='/signup'>
-                     <Register />
+                     <Register 
+                     onSubmit={handleRegistration}
+                     />
                   </Route>
                   <Route path='/signin'>
-                     <Login />
+                     <Login 
+                     onSubmit={handleAuthorization}
+                     />
                   </Route>
                </Switch>
 
