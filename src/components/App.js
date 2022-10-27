@@ -12,6 +12,7 @@ import AddPlacePopup from './AddPlacePopup';
 import { Route, Switch } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register'
+import ProtectedRoute from './ProtectedRoute';
 
 function App() {
 
@@ -23,6 +24,8 @@ function App() {
    const [isAddPlacePopupOpen, setAddPlacePopupOpen] = React.useState(false)
    const [selectedCard, setSelectedCard] = React.useState({})
    const [currentUser, setCurrentUser] = React.useState({})
+   const [loggedIn, setLoggedIn] = React.useState(false) 
+   
 
    React.useEffect(() => {
       api.getUserInfo()
@@ -156,28 +159,32 @@ function App() {
             <CurrentUserContext.Provider value={currentUser}>
                <Header />
                <Switch>
+               <ProtectedRoute
+                  exact path="/"
+                  loggedIn={loggedIn}
+                  component={Main}
+                  onEditProfile={handleEditProfileClick}
+                  onAddPlace={handleAddPlaceClick}
+                  onEditAvatar={handleEditAvatarClick}
+                  onCardClick={handleCardClick}
+                  cards={cards}
+                  onCardLike={handleCardLike}
+                  onCardDelete={handleCardDelete}
+               />
 
-                  <Route exact path='/'>
-                     <Main
-                        onEditProfile={handleEditProfileClick}
-                        onAddPlace={handleAddPlaceClick}
-                        onEditAvatar={handleEditAvatarClick}
-                        onCardClick={handleCardClick}
-                        cards={cards}
-                        onCardLike={handleCardLike}
-                        onCardDelete={handleCardDelete}
-                     />
-                  </Route>
-                  <Route path='/sign-up'>
+                  
+
+
+                  
+                  <Route path='/signup'>
                      <Register />
                   </Route>
-                  <Route path='/sign-in'>
+                  <Route path='/signin'>
                      <Login />
                   </Route>
-
                </Switch>
 
-               <Footer />
+               {loggedIn ? <Footer /> : ''}
 
                <EditAvatarPopup
                   isOpen={isEditAvatarPopupOpen}

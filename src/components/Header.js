@@ -12,12 +12,12 @@ function Header() {
                 </div>
             </Route>
 
-            <Route path="/sign-up">
-                <Link className="header__auth-link" to="sign-in">Войти</Link>
+            <Route path="/signup">
+                <Link className="header__auth-link" to="signin">Войти</Link>
             </Route>
 
-            <Route path="/sign-in">
-                <Link className="header__auth-link" to="sign-up">Регистрация</Link>
+            <Route path="/signin">
+                <Link className="header__auth-link" to="signup">Регистрация</Link>
             </Route>
             
         </header>
