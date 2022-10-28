@@ -28,7 +28,7 @@ export const register = (password, email) => {
 }; 
 
 
-export const authorization = (password, email) => {
+export const authorize = (password, email) => {
   return fetch(`${BASE_URL}/signin`, {
     method: 'POST',
     headers: {
@@ -43,8 +43,8 @@ export const authorization = (password, email) => {
     return response.json()
   })
   .then((res) => {
-    if (res.jwt){
-      localStorage.setItem('jwt', res.jwt);
+    if (res.token){
+      localStorage.setItem('jwt', res.token);
       return res;
     }
   })

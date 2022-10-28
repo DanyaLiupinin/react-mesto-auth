@@ -1,7 +1,8 @@
 import React from "react"
 import { Link } from "react-router-dom"
+import * as mestoAuth from '../utils/mestoAuth';
 
-function Register (props) {
+function Register () {
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
@@ -16,7 +17,7 @@ function Register (props) {
 
     function handleSubmit (e) {
         e.preventDefault()
-        props.onSubmit(password, email)
+        mestoAuth.register(password, email)
     }
 
     return (

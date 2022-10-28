@@ -1,6 +1,6 @@
 import React from "react"
-
 import { useHistory } from 'react-router-dom';
+import * as mestoAuth from '../utils/mestoAuth';
 
 function Login({ onSubmit }) {
 
@@ -19,8 +19,19 @@ function Login({ onSubmit }) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        onSubmit(password, email)
-        // возможно нужно очистить стейты
+        mestoAuth.authorize(password, email)
+        .then((data) => {
+            if (data.token) {
+                setEmail('')
+                setPassword('')
+            } else {
+                return
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+        onSubmit()
         history.push('/')
     }
 

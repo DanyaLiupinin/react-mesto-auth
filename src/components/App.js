@@ -2,7 +2,7 @@ import '../index.css'
 import Header from './Header'
 import Main from './Main'
 import Footer from './Footer';
-import React from 'react';
+import React, { useEffect } from 'react';
 import ImagePopup from './ImagePopup'
 import api from '../utils/Api';
 import { CurrentUserContext } from '../context/CurrentUserContext';
@@ -14,6 +14,7 @@ import Login from './Login';
 import Register from './Register'
 import ProtectedRoute from './ProtectedRoute';
 import * as mestoAuth from '../utils/mestoAuth';
+import { useHistory } from 'react-router-dom';
 
 function App() {
 
@@ -25,19 +26,22 @@ function App() {
    const [selectedCard, setSelectedCard] = React.useState({})
    const [currentUser, setCurrentUser] = React.useState({})
    const [loggedIn, setLoggedIn] = React.useState(false) 
+   const [userEmail, setUserEmail] = React.useState('')
+   const history = useHistory()
    
-
-   function checkToken() {
-      const token = localStorage.getItem('token')
-      console.log(token)
-   }
-
-   // проверить написание jst
-   // в mestoAuth сохраняю в локальное хранилище как jwt, дальше пишу как токен
-   // проверка и сохранение токена при входе на сайт
-
-   checkToken()
-
+   useEffect(() => {
+      const token = localStorage.getItem('jwt')
+      if (token) {
+         mestoAuth.checkToken(token)
+         .then((userData) => {
+            if (userData) {
+               handleLogin()
+               history.push('/')
+               setUserEmail(userData.data.email)
+            }
+         })
+      }
+   }, [loggedIn])
 
    React.useEffect(() => {
       api.getUserInfo()
@@ -164,23 +168,18 @@ function App() {
       alert (`Ошибка. ${err}`)
    }
 
-   function handleRegistration (password, email) {
-      mestoAuth.register(password, email)
-   }
-
-   function handleAuthorization (password, email) {
-      mestoAuth.authorization(password, email)
+   function handleLogin () {
       setLoggedIn(true)
    }
-
-   
 
    return (
       <>
       
          <div className="page__container">
             <CurrentUserContext.Provider value={currentUser}>
-               <Header />
+               <Header 
+                  email={userEmail}
+               />
                <Switch>
                   <ProtectedRoute
                      exact path="/"
@@ -201,12 +200,11 @@ function App() {
                   
                   <Route path='/signup'>
                      <Register 
-                     onSubmit={handleRegistration}
                      />
                   </Route>
                   <Route path='/signin'>
                      <Login 
-                     onSubmit={handleAuthorization}
+                     onSubmit={handleLogin}
                      />
                   </Route>
                </Switch>
