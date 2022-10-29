@@ -15,6 +15,7 @@ import Register from './Register'
 import ProtectedRoute from './ProtectedRoute';
 import * as mestoAuth from '../utils/mestoAuth';
 import { useHistory } from 'react-router-dom';
+import InfoTooltip from './InfoTooltip'
 
 function App() {
 
@@ -23,22 +24,29 @@ function App() {
    const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = React.useState(false)
    const [isEditProfilePopupOpen, setEditProfilePopupOpen] = React.useState(false)
    const [isAddPlacePopupOpen, setAddPlacePopupOpen] = React.useState(false)
+   const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false)
    const [selectedCard, setSelectedCard] = React.useState({})
    const [currentUser, setCurrentUser] = React.useState({})
    const [loggedIn, setLoggedIn] = React.useState(false) 
    const [userEmail, setUserEmail] = React.useState('')
+   const [isSuccess, setIsSuccess] = React.useState(false)
    const history = useHistory()
    
    useEffect(() => {
-      const token = localStorage.getItem('jwt')
-      if (token) {
+      if (localStorage.getItem('jwt')) {
+         const token = localStorage.getItem('jwt')
          mestoAuth.checkToken(token)
          .then((userData) => {
             if (userData) {
-               handleLogin()
-               history.push('/')
+               setLoggedIn(true)
+               setIsSuccess(true)
                setUserEmail(userData.data.email)
+               history.push('/')
             }
+         })
+         .catch((err) => {
+            setLoggedIn(false)
+            apiError(err)
          })
       }
    }, [loggedIn])
@@ -123,11 +131,16 @@ function App() {
       setAddPlacePopupOpen(true)
    }
 
+   function handleInfoTooltip() {
+      setInfoTooltipOpen(true)
+   }
+
    function closeAllPopups() {
       setEditAvatarPopupOpen(false)
       setEditProfilePopupOpen(false)
       setAddPlacePopupOpen(false)
       setSelectedCard({})
+      setInfoTooltipOpen(false)
    }
 
    function handleCardClick(card) {
@@ -168,8 +181,42 @@ function App() {
       alert (`Ошибка. ${err}`)
    }
 
-   function handleLogin () {
-      setLoggedIn(true)
+   function handleRegister (password, email) {
+      mestoAuth.register(password, email)
+      .then((data) => {
+         setIsSuccess(true)
+         history.push('/signin')
+      })
+      .catch((err) => {
+         setIsSuccess(false)
+         apiError(err)
+      })
+      .finally(() => {
+         handleInfoTooltip()
+      })
+   }
+
+   function handleLogin (password, email) {
+      mestoAuth.authorize(password, email)
+      .then((data) => {
+         if (data) {
+            setLoggedIn(true)
+            setIsSuccess(true)
+            history.push('/')
+         } else {
+            setIsSuccess(false)
+            handleInfoTooltip()
+         }
+      })
+      .catch((err) => {
+         apiError(err)
+      })
+   }
+
+   function handleSignOut () {
+      localStorage.removeItem("jwt");
+      history.push("/signin");
+      setLoggedIn(false);
    }
 
    return (
@@ -179,6 +226,7 @@ function App() {
             <CurrentUserContext.Provider value={currentUser}>
                <Header 
                   email={userEmail}
+                  onClick={handleSignOut}
                />
                <Switch>
                   <ProtectedRoute
@@ -195,11 +243,9 @@ function App() {
                   />
 
                   
-
-
-                  
                   <Route path='/signup'>
                      <Register 
+                     onSubmit={handleRegister}
                      />
                   </Route>
                   <Route path='/signin'>
@@ -233,6 +279,12 @@ function App() {
                   card={selectedCard}
                   onClose={closeAllPopups}
                />
+
+               <InfoTooltip 
+               isSuccess={isSuccess}
+               isOpen={isInfoTooltipOpen}
+               onClose={closeAllPopups}
+               />
             </CurrentUserContext.Provider>
          </div>
 
@@ -241,3 +293,10 @@ function App() {
 }
 
 export default App;
+
+// можно улучшить 
+
+// добавить isLoadin и состояния кнопок во время загрузки 
+
+// подключить валидацию
+

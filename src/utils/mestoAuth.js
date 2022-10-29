@@ -40,12 +40,20 @@ export const authorize = (password, email) => {
     })
   })
   .then((response) => {
-    return response.json()
+    try {
+      if (response.status === 200){
+        return response.json();
+      }
+    } catch(e){
+      return (e)
+    }
   })
   .then((res) => {
-    if (res.token){
+    if (res.token) {
       localStorage.setItem('jwt', res.token);
-      return res;
+      return res
+    } else {
+      return
     }
   })
   .catch((err) => console.log(err));

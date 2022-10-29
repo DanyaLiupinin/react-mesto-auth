@@ -2,7 +2,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import * as mestoAuth from '../utils/mestoAuth';
 
-function Register () {
+function Register ({onSubmit}) {
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
@@ -17,7 +17,7 @@ function Register () {
 
     function handleSubmit (e) {
         e.preventDefault()
-        mestoAuth.register(password, email)
+        onSubmit(password, email)
     }
 
     return (
@@ -44,10 +44,3 @@ function Register () {
 }
 
 export default Register
-
-// TODO
-
-// разобраться с полями ошибок 
-
-// убирать футер при окнах регистрации
-

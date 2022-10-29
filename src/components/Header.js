@@ -1,14 +1,21 @@
 import logo from '../images/header__logo.svg'
-import { Route, Link } from 'react-router-dom'
+import { Route, Link, useHistory } from 'react-router-dom'
 
-function Header({email}) {
+function Header({email, onClick}) {
+
+    const history = useHistory()
+
+    function signOut(){
+        onClick()
+      }
+
     return (
         <header className="header">
             <Link to="/" className="header__logo" style={{ backgroundImage: `url(${logo})` }}></Link>
             <Route exact path="/">
                 <div className='header__wrapper'>
                     <p className='header__user'>{email}</p>
-                    <button className='header__logout'>Выйти</button>
+                    <button className='header__logout' onClick={signOut}>Выйти</button>
                 </div>
             </Route>
 

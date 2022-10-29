@@ -9,4 +9,9 @@
     margin-top: 6px;
     margin-bottom: 46px;
     border: 0;
+    cursor: pointer;
+}
+
+.header__logout:hover {
+    opacity: .8;
 }
