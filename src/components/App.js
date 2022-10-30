@@ -2,7 +2,7 @@ import '../index.css'
 import Header from './Header'
 import Main from './Main'
 import Footer from './Footer';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ImagePopup from './ImagePopup'
 import api from '../utils/Api';
 import { CurrentUserContext } from '../context/CurrentUserContext';
@@ -21,60 +21,69 @@ function App() {
 
    // попапы
 
-   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = React.useState(false)
-   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = React.useState(false)
-   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = React.useState(false)
-   const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false)
-   const [selectedCard, setSelectedCard] = React.useState({})
-   const [currentUser, setCurrentUser] = React.useState({})
-   const [loggedIn, setLoggedIn] = React.useState(false) 
-   const [userEmail, setUserEmail] = React.useState('')
-   const [isSuccess, setIsSuccess] = React.useState(false)
+   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false)
+   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false)
+   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false)
+   const [isInfoTooltipOpen, setInfoTooltipOpen] = useState(false)
+   const [selectedCard, setSelectedCard] = useState({})
+   const [currentUser, setCurrentUser] = useState({})
+   const [loggedIn, setLoggedIn] = useState(false)
+   const [userEmail, setUserEmail] = useState('')
+   const [isSuccess, setIsSuccess] = useState(false)
    const history = useHistory()
-   
+
+   // проверяет jwt пользователя при возвращении на сайт 
+
    useEffect(() => {
-      if (localStorage.getItem('jwt')) {
-         const token = localStorage.getItem('jwt')
+      const token = localStorage.getItem('jwt')
+      if (token) {
          mestoAuth.checkToken(token)
-         .then((userData) => {
-            if (userData) {
-               setLoggedIn(true)
-               setIsSuccess(true)
-               setUserEmail(userData.data.email)
-               history.push('/')
-            }
-         })
-         .catch((err) => {
-            setLoggedIn(false)
-            apiError(err)
-         })
+            .then((userData) => {
+               if (userData) {
+                  setLoggedIn(true)
+                  setIsSuccess(true)
+                  setUserEmail(userData.data.email)
+                  history.push('/')
+               }
+            })
+            .catch((err) => {
+               setLoggedIn(false)
+               apiError(err)
+            })
       }
    }, [loggedIn])
 
-   React.useEffect(() => {
-      api.getUserInfo()
-         .then((data) => {
-            setCurrentUser(data)
-         })
-         .catch((err) => {
-            apiError(err)
-         })
-   }, [])
+   useEffect(() => {
+      if (!loggedIn) {
+         return
+      } else {
+         api.getUserInfo()
+            .then((data) => {
+               setCurrentUser(data)
+            })
+            .catch((err) => {
+               apiError(err)
+            })
+      }
+   }, [loggedIn])
 
    // стейт карточек и обращение к api за начальным массивом 
 
-   const [cards, setCards] = React.useState([])
+   const [cards, setCards] = useState([])
 
-   React.useEffect(() => {
-      api.getInitialCards()
-         .then(cards => {
-            setCards(cards)
-         })
-         .catch((err) => {
-            apiError(err)
-         })
-
-   }, [currentUser])
+   useEffect(() => {
+      if (!loggedIn) {
+         return
+      } else {
+         api.getInitialCards()
+            .then(cards => {
+               setCards(cards)
+            })
+            .catch((err) => {
+               apiError(err)
+            })
+      }
+   }, [currentUser, loggedIn])
 
    function handleCardLike(card) {
 
@@ -96,7 +105,7 @@ function App() {
             .catch((err) => {
                apiError(err)
             })
-            
+
       } else {
          api.deleteLike(card._id)
             .then((newCard) => {
@@ -167,7 +176,7 @@ function App() {
          })
    }
 
-   function handleAddPlaceSubmit (data) {
+   function handleAddPlaceSubmit(data) {
       api.addCard(data)
          .then((newCard) => {
             setCards([newCard, ...cards])
@@ -177,126 +186,126 @@ function App() {
          })
    }
 
-   function apiError (err) {
-      alert (`Ошибка. ${err}`)
+   function apiError(err) {
+      alert(`Ошибка. ${err}`)
    }
 
-   function handleRegister (password, email) {
+   function handleRegister(password, email) {
       mestoAuth.register(password, email)
-      .then((data) => {
-         setIsSuccess(true)
-         history.push('/signin')
-      })
-      .catch((err) => {
-         setIsSuccess(false)
-         apiError(err)
-      })
-      .finally(() => {
-         handleInfoTooltip()
-      })
+         .then((data) => {
+            setIsSuccess(true)
+            history.push('/signin')
+         })
+         .catch((err) => {
+            setIsSuccess(false)
+            console.log(err)
+         })
+         .finally(() => {
+            handleInfoTooltip()
+         })
    }
 
-   function handleLogin (password, email) {
+   function handleLogin(password, email) {
       mestoAuth.authorize(password, email)
-      .then((data) => {
-         if (data) {
-            setLoggedIn(true)
-            setIsSuccess(true)
-            history.push('/')
-         } else {
+         .then((data) => {
+            if (data.token) {
+               localStorage.setItem('jwt', data.token);
+               setLoggedIn(true)
+               setIsSuccess(true)
+               history.push('/')
+            }
+         })
+         .catch((err) => {
             setIsSuccess(false)
             handleInfoTooltip()
-         }
-      })
-      .catch((err) => {
-         apiError(err)
-      })
+            console.log(err)
+         })
    }
 
-   function handleSignOut () {
+   function handleSignOut() {
       localStorage.removeItem("jwt");
       history.push("/signin");
       setLoggedIn(false);
    }
 
    return (
-      <>
-      
-         <div className="page__container">
-            <CurrentUserContext.Provider value={currentUser}>
-               <Header 
-                  email={userEmail}
-                  onClick={handleSignOut}
+      <div className="page__container">
+         <CurrentUserContext.Provider value={currentUser}>
+            <Header
+               email={userEmail}
+               onClick={handleSignOut}
+            />
+            <Switch>
+               <ProtectedRoute
+                  exact path="/"
+                  loggedIn={loggedIn}
+                  component={Main}
+                  onEditProfile={handleEditProfileClick}
+                  onAddPlace={handleAddPlaceClick}
+                  onEditAvatar={handleEditAvatarClick}
+                  onCardClick={handleCardClick}
+                  cards={cards}
+                  onCardLike={handleCardLike}
+                  onCardDelete={handleCardDelete}
                />
-               <Switch>
-                  <ProtectedRoute
-                     exact path="/"
-                     loggedIn={loggedIn}
-                     component={Main}
-                     onEditProfile={handleEditProfileClick}
-                     onAddPlace={handleAddPlaceClick}
-                     onEditAvatar={handleEditAvatarClick}
-                     onCardClick={handleCardClick}
-                     cards={cards}
-                     onCardLike={handleCardLike}
-                     onCardDelete={handleCardDelete}
-                  />
 
-                  
-                  <Route path='/signup'>
-                     <Register 
+
+               <Route path='/signup'>
+                  <Register
                      onSubmit={handleRegister}
-                     />
-                  </Route>
-                  <Route path='/signin'>
-                     <Login 
+                  />
+               </Route>
+               <Route path='/signin'>
+                  <Login
                      onSubmit={handleLogin}
-                     />
-                  </Route>
-               </Switch>
+                  />
+               </Route>
+            </Switch>
 
-               {loggedIn ? <Footer /> : ''}
+            {loggedIn ? <Footer /> : ''}
 
-               <EditAvatarPopup
-                  isOpen={isEditAvatarPopupOpen}
-                  onClose={closeAllPopups}
-                  onUpdateAvatar={handleUpdateAvatar}
-               />
+            <EditAvatarPopup
+               isOpen={isEditAvatarPopupOpen}
+               onClose={closeAllPopups}
+               onUpdateAvatar={handleUpdateAvatar}
+            />
 
-               <EditProfilePopup
-                  isOpen={isEditProfilePopupOpen}
-                  onClose={closeAllPopups}
-                  onUpdateUser={handleUpdateUser}
-               />
+            <EditProfilePopup
+               isOpen={isEditProfilePopupOpen}
+               onClose={closeAllPopups}
+               onUpdateUser={handleUpdateUser}
+            />
 
-               <AddPlacePopup
-                  isOpen={isAddPlacePopupOpen}
-                  onClose={closeAllPopups}
-                  onAddPlace={handleAddPlaceSubmit}
-               />
+            <AddPlacePopup
+               isOpen={isAddPlacePopupOpen}
+               onClose={closeAllPopups}
+               onAddPlace={handleAddPlaceSubmit}
+            />
 
-               <ImagePopup
-                  card={selectedCard}
-                  onClose={closeAllPopups}
-               />
+            <ImagePopup
+               card={selectedCard}
+               onClose={closeAllPopups}
+            />
 
-               <InfoTooltip 
+            <InfoTooltip
                isSuccess={isSuccess}
                isOpen={isInfoTooltipOpen}
                onClose={closeAllPopups}
-               />
-            </CurrentUserContext.Provider>
-         </div>
+               successTitle='Вы успешно зарегистрировались!'
+               failedTitle='Что-то пошло не так! Попробуйте ещё раз.'
+            />
+         </CurrentUserContext.Provider>
+      </div>
 
-      </>
+
    );
 }
 
 export default App;
 
-// можно улучшить 
+// можно улучшить
 
-// добавить isLoadin и состояния кнопок во время загрузки 
+// добавить isLoadin и состояния кнопок во время загрузки
 
 // подключить валидацию
 

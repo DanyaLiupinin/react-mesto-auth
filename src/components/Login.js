@@ -30,7 +30,7 @@ function Login({ onSubmit }) {
                     <span className="account__input-error" id="error-name"></span>
                 </div>
                 <div className="account__input-field">
-                    <input className="account__input" id="auth-password" name="auth-password" type="text" minLength='5' maxLength='15' value={password} onChange={handlePasswordChange} required placeholder="Пароль" />
+                    <input className="account__input" id="auth-password" name="auth-password" type="password" minLength='5' maxLength='15' value={password} onChange={handlePasswordChange} required placeholder="Пароль" />
                     <span className="account__input-error" id="error-name"></span>
                 </div>
                 <button type="submit" className="account__submit-button account__submit-button_active">Войти</button>

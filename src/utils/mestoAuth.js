@@ -8,24 +8,14 @@ export const register = (password, email) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      "password": password, 
+      "password": password,
       "email": email
     })
   })
-  .then((response) => {
-    try {
-      if (response.status === 200){
-        return response.json();
-      }
-    } catch(e){
-      return (e)
-    }
-  })
-  .then((res) => {
-     return res;
-  })
-  .catch((err) => console.log(err));
-}; 
+    .then((response) => {
+      return checkRes(response)
+    })
+};
 
 
 export const authorize = (password, email) => {
@@ -35,28 +25,13 @@ export const authorize = (password, email) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      "password": password, 
+      "password": password,
       "email": email
     })
   })
-  .then((response) => {
-    try {
-      if (response.status === 200){
-        return response.json();
-      }
-    } catch(e){
-      return (e)
-    }
-  })
-  .then((res) => {
-    if (res.token) {
-      localStorage.setItem('jwt', res.token);
-      return res
-    } else {
-      return
-    }
-  })
-  .catch((err) => console.log(err));
+    .then((res) => {
+      return checkRes(res)
+    })
 }
 
 
@@ -68,8 +43,17 @@ export const checkToken = (token) => {
       'Authorization': `Bearer ${token}`
     }
   })
-  .then((res) => {
-    return res.json()
-  })
+    .then((res) => {
+      return res.json()
+    })
 }
+
+function checkRes(res) {
+  if (res.ok) {
+    return res.json()
+  } else {
+    return Promise.reject(`Ошибка: ${res.status}`)
+  }
+}
+
 
